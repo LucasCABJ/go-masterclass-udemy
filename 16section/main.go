@@ -15,6 +15,7 @@ type application struct {
 	errorLog       *log.Logger
 	userRepository UserRepository
 	templateDir    string
+	tp             *TemplateRenderer
 }
 
 func main() {
@@ -32,6 +33,7 @@ func main() {
 		userRepository: NewSqlUserRepository(db),
 		templateDir:    "./16section/templates",
 	}
+	app.tp = NewTemplateRenderer(app.templateDir, true)
 
 	fmt.Println("Initializing server on port 8080")
 	if err := app.serve(); err != nil {

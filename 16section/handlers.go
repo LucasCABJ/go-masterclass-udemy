@@ -18,7 +18,6 @@ var htmlContentTemplate = `
 `
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	// homeContent := fmt.Sprintf(htmlContentTemplate, "Home", "<h1>This is home page!</h1>")
 	app.render(w, "index.html", nil)
 }
 
