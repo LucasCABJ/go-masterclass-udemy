@@ -5,33 +5,36 @@ import (
 	"net/http"
 )
 
-var htmlContentTemplate = `
-	<!DOCTYPE html>
-	<html>
-		<head>
-			<title>%s</title>
-		</head>
-		<body>
-			%s
-		</body>
-	</html>
-`
-
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	app.render(w, "index.html", nil)
 }
 
+func (app *application) login(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+
+		email := r.FormValue("email")
+		password := r.FormValue("password")
+		fmt.Println(email, password)
+	}
+	app.render(w, "login.html", nil)
+}
+
+func (app *application) register(w http.ResponseWriter, r *http.Request) {
+	app.render(w, "register.html", nil)
+}
+
+func (app *application) submit(w http.ResponseWriter, r *http.Request) {
+	app.render(w, "submit.html", nil)
+}
+
 func (app *application) contact(w http.ResponseWriter, r *http.Request) {
-	contactContent := fmt.Sprintf(htmlContentTemplate, "Contact", "<h1>This is contact page!</h1>")
-	writeHtmlResponse(w, contactContent)
+	app.render(w, "contact.html", nil)
 }
 
 func (app *application) about(w http.ResponseWriter, r *http.Request) {
-	aboutContent := fmt.Sprintf(htmlContentTemplate, "About", "<h1>This is about page!</h1>")
-	writeHtmlResponse(w, aboutContent)
-}
-
-func writeHtmlResponse(w http.ResponseWriter, html string) {
-	w.Header().Add("Content-Type", "text/html")
-	w.Write([]byte(html))
+	app.render(w, "about.html", nil)
 }
