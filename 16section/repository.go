@@ -3,14 +3,20 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
+var (
+	InvalidCredentialsErr = errors.New("invalid credentials")
+)
+
 type UserRepository interface {
-	CreateUserWithProfile(name, email, password, avatar string) (int64, error)
+	CreateUser(name, email, password, avatar string) (int, error)
 	GetUserByEmail(email string) (*User, error)
 	GetUsers() ([]User, error)
+	Authenticate(email, plainPassword string) (int, error)
 }
 
 type SqlUserRepository struct {
@@ -23,7 +29,7 @@ func NewSqlUserRepository(db *sql.DB) UserRepository {
 	}
 }
 
-func (r *SqlUserRepository) CreateUserWithProfile(name, email, password, avatar string) (int64, error) {
+func (r *SqlUserRepository) CreateUser(name, email, plainPassword, avatar string) (int, error) {
 	ctx := context.Background()
 
 	tx, err := r.db.BeginTx(ctx, nil)
@@ -38,7 +44,7 @@ func (r *SqlUserRepository) CreateUserWithProfile(name, email, password, avatar 
 	}
 	defer stmt.Close()
 
-	hashPass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hashPass, err := bcrypt.GenerateFromPassword([]byte(plainPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return 0, err
 	}
@@ -69,7 +75,24 @@ func (r *SqlUserRepository) CreateUserWithProfile(name, email, password, avatar 
 		return 0, nil
 	}
 
-	return UserID, nil
+	return int(UserID), nil
+}
+
+func (r *SqlUserRepository) Authenticate(email, plainPassword string) (int, error) {
+	user, err := r.GetUserByEmail(email)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, InvalidCredentialsErr
+		}
+		return 0, err
+	}
+	if err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(plainPassword)); err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return 0, InvalidCredentialsErr
+		}
+		return 0, err
+	}
+	return user.ID, nil
 }
 
 func (r *SqlUserRepository) GetUserByEmail(email string) (*User, error) {

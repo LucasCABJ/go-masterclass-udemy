@@ -49,6 +49,10 @@ func main() {
 	app.tp = NewTemplateRenderer(app.templateDir, session, true)
 
 	fmt.Println("Initializing server on port 8080")
+
+	// delete then
+	// app.userRepository.CreateUserWithProfile("lucas", "lucas@lucas.com", "123456", "lucas.webp")
+
 	if err := app.serve(); err != nil {
 		log.Fatal("Failed init server: %w", err)
 	}
