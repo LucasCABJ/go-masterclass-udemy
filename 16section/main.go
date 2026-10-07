@@ -46,7 +46,7 @@ func main() {
 		publicPath:     filepath.Join(".", "public"),
 		session:        session,
 	}
-	app.tp = NewTemplateRenderer(app.templateDir, true)
+	app.tp = NewTemplateRenderer(app.templateDir, session, true)
 
 	fmt.Println("Initializing server on port 8080")
 	if err := app.serve(); err != nil {

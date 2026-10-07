@@ -6,6 +6,8 @@ import (
 	"path"
 	"path/filepath"
 	"sync"
+
+	"github.com/golangcollege/sessions"
 )
 
 type TemplateRenderer struct {
@@ -15,7 +17,13 @@ type TemplateRenderer struct {
 	templateDir string
 }
 
-func NewTemplateRenderer(templateDir string, isDev bool) *TemplateRenderer {
+type templateData struct {
+	Form            *Form
+	IsAuthenticated bool
+	Flash           string
+}
+
+func NewTemplateRenderer(templateDir string, session *sessions.Session, isDev bool) *TemplateRenderer {
 	return &TemplateRenderer{
 		cache:       make(map[string]*template.Template),
 		devMode:     isDev,
