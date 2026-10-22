@@ -13,7 +13,10 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) login(w http.ResponseWriter, r *http.Request) {
-	app.infoLog.Printf("Logged in: %s\n", app.session.GetString(r, loggedInUserKey))
+	if app.isAuthenticated(r) {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
 
 	if r.Method == http.MethodPost {
 		if err := r.ParseForm(); err != nil {
@@ -50,8 +53,10 @@ func (app *application) login(w http.ResponseWriter, r *http.Request) {
 		}
 
 		app.session.Put(r, loggedInUserKey, email)
+		app.session.Put(r, "flash", "You are logged in!")
 
 		http.Redirect(w, r, "/submit", http.StatusSeeOther)
+		return
 	}
 
 	app.render(w, r, "login.html", &templateData{
@@ -101,11 +106,18 @@ func (app *application) register(w http.ResponseWriter, r *http.Request) {
 		}
 
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
 	}
 
 	app.render(w, r, "register.html", &templateData{
 		Form: NewForm(r.PostForm),
 	})
+}
+
+func (app *application) logout(w http.ResponseWriter, r *http.Request) {
+	app.session.Remove(r, loggedInUserKey)
+	app.session.Put(r, "flash", "Logged out successfully!")
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (app *application) submit(w http.ResponseWriter, r *http.Request) {

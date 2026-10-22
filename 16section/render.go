@@ -18,5 +18,7 @@ func (a *application) buildDefaultTemplateData(data *templateData, r *http.Reque
 		data = &templateData{}
 	}
 	data.Flash = a.session.PopString(r, "flash")
+	data.IsAuthenticated = a.isAuthenticated(r)
+	a.infoLog.Printf("Flash cookie: %s; isAuthenticated: %v; called by %s\n", data.Flash, data.IsAuthenticated, r.URL.Path)
 	return data
 }
