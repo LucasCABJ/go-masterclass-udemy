@@ -22,7 +22,7 @@
                 <label for="email">Email address:</label>
                 <input type="text" id="email" name="email" value="{{.Get "email"}}" required>
                 {{with .Errors.Get "email"}}
-                <p class="inline-error">{{.}}</p>
+                    <p class="inline-error">{{.}}</p>
                 {{end}}
             </div>
 
@@ -30,7 +30,7 @@
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required>
                 {{with .Errors.Get "password"}}
-                <p class="inline-error">{{.}}</p>
+                    <p class="inline-error">{{.}}</p>
                 {{end}}
             </div>
 
@@ -38,7 +38,7 @@
                 <label for="avatar">Avatar:</label>
                 <input type="url" id="avatar" name="avatar" value="{{.Get "avatar"}}">
                 {{with .Errors.Get "avatar"}}
-                <p class="inline-error">{{.}}</p>
+                    <p class="inline-error">{{.}}</p>
                 {{end}}
             </div>
             {{end}}

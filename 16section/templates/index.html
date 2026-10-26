@@ -15,7 +15,7 @@
         <div class="post-meta">
           <a href="/vote?post_id={{.ID}}" class="author"> <span class="points">{{.GetVoteCountsHuman}}</span></a
           >|
-          <span class="time">{{.CreatedAtHuman}}</span>
+          <span class="time">{{.GetCreatedAtHuman}}</span>
           | <a href="/comments?post_id={{.ID}}" class="comments-link">{{.GetCommentCountsHuman}}</a>
         </div>
       </div>
@@ -25,10 +25,12 @@
 
   {{if gt .Metadata.TotalRecords .Metadata.PageSize}}
   <div class="pagination">
-    {{if gt .Metadata.PrevPage 0}}
-    <a href="{{.PrevLink}}" class="more-link">Prev</a>
-    {{end}} {{if gt .Metadata.NextPage 0}}
-    <a href="{{.NextLink}}" class="more-link">Next</a>
+    {{if gt .Metadata.CurrentPage .Metadata.FirstPage}}
+        <a href="?page={{.Metadata.PrevPage}}" class="more-link">Prev</a>
+    {{end}}
+
+    {{if lt .Metadata.CurrentPage .Metadata.LastPage}}
+        <a href="?page={{.Metadata.NextPage}}" class="more-link">Next</a>
     {{end}}
   </div>
   {{end}}

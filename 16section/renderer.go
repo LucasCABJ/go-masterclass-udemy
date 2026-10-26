@@ -18,6 +18,8 @@ type TemplateRenderer struct {
 }
 
 type templateData struct {
+	Posts           []Post
+	Metadata        *Metadata
 	Form            *Form
 	IsAuthenticated bool
 	Flash           string

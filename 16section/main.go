@@ -18,6 +18,7 @@ type application struct {
 	infoLog        *log.Logger
 	errorLog       *log.Logger
 	userRepository UserRepository
+	postRepository PostRepository
 	templateDir    string
 	publicPath     string
 	tp             *TemplateRenderer
@@ -42,6 +43,7 @@ func main() {
 		errorLog:       log.New(os.Stderr, "ERROR\t", log.Ltime|log.LstdFlags|log.Lmicroseconds|log.Lshortfile),
 		infoLog:        log.New(os.Stderr, "INFO\t", log.Ltime|log.LstdFlags),
 		userRepository: NewSqlUserRepository(db),
+		postRepository: NewSqlPostRepository(db),
 		templateDir:    "./templates",
 		publicPath:     filepath.Join(".", "public"),
 		session:        session,
