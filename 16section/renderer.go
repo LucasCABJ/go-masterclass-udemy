@@ -19,8 +19,12 @@ type TemplateRenderer struct {
 
 type templateData struct {
 	Posts           []Post
+	Post            *Post
 	Metadata        *Metadata
+	Comments        []Comment
 	Form            *Form
+	PrevLink        string
+	NextLink        string
 	IsAuthenticated bool
 	Flash           string
 }

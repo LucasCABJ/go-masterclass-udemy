@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 )
@@ -35,6 +36,10 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, "index.html", &templateData{
 		Posts:    posts,
 		Metadata: &metadata,
+		NextLink: fmt.Sprintf("/?q=%s&order_by=%s&page=%d&page_size=%d",
+			filter.Query, filter.OrderBy, metadata.NextPage, filter.PageSize),
+		PrevLink: fmt.Sprintf("/?q=%s&order_by=%s&page=%d&page_size=%d",
+			filter.Query, filter.OrderBy, metadata.PrevPage, filter.PageSize),
 	})
 }
 
@@ -165,6 +170,64 @@ func (app *application) vote(w http.ResponseWriter, r *http.Request) {
 
 	app.session.Put(r, "flash", "You voted successfully!")
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (app *application) comments(w http.ResponseWriter, r *http.Request) {
+	postID := app.readIntWithDefault(r, "post_id", 0)
+
+	post, err := app.postRepository.GetById(postID)
+	if err != nil {
+		app.errorLog.Printf("error getting post: %s\n", err.Error())
+		app.session.Put(r, "flash", "Error getting post")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	comments, err := app.postRepository.GetComments(postID)
+	if err != nil {
+		app.errorLog.Printf("error getting comments: %s\n", err.Error())
+		app.session.Put(r, "flash", "Error getting comments")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		if err = r.ParseForm(); err != nil {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+
+		form := NewForm(r.PostForm)
+		form.Required("comment").MinLength("comment", 5)
+
+		if !form.Valid() {
+			app.render(w, r, "comments.html", &templateData{
+				Form:     form,
+				Post:     post,
+				Comments: comments,
+			})
+			return
+		}
+
+		comment := r.FormValue("comment")
+		userID := app.getUserFromContext(r.Context()).ID
+
+		_, err := app.postRepository.AddComment(comment, userID, postID)
+		if err != nil {
+			app.errorLog.Printf("error creating comment: %s\n", err.Error())
+			app.session.Put(r, "flash", "Error creating comment")
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
+		app.session.Put(r, "flash", "Comment added successfully!")
+		http.Redirect(w, r, "/comments?post_id="+strconv.Itoa(postID), http.StatusSeeOther)
+		return
+	}
+
+	app.render(w, r, "comments.html", &templateData{
+		Comments: comments,
+		Post:     post,
+	})
 }
 
 func (app *application) submit(w http.ResponseWriter, r *http.Request) {

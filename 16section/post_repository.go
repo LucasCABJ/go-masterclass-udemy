@@ -262,7 +262,7 @@ func (r *SqlPostRepository) GetComments(postId int) ([]Comment, error) {
 	FROM comments c
 	INNER JOIN users u ON c.user_id = u.id
 	WHERE c.post_id = ?
-	ORDER BY created_at DESC
+	ORDER BY c.created_at DESC
 	`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
