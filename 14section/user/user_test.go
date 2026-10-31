@@ -1,54 +1,62 @@
 package user
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-// func TestValidateUsername(t *testing.T) {
-// 	got := CheckUsername("lucascabj")
-// 	if got != true {
-// 		t.Errorf("got: %v \t want: %v", got, true)
-// 	}
-// }
+func TestCheckUsername(t *testing.T) {
+	assert.True(t, CheckUsername("supername123"))
+}
 
-// func TestCheckUsernameTable(t *testing.T) {
-// 	testCases := []struct {
-// 		name  string
-// 		input string
-// 		want  bool
-// 	}{
-// 		{name: "valid username", input: "lucascabj", want: true},
-// 		{name: "invalid username - empty string", input: "", want: false},
-// 		{name: "invalid username - too short", input: "lucas", want: false},
-// 		{name: "invalid username - contains admin", input: "adminlucas", want: false},
-// 	}
-// 	for _, tc := range testCases {
-// 		got := CheckUsername(tc.input)
-// 		if got != tc.want {
-// 			t.Errorf("%s: got: %v \t want: %v", tc.name, got, tc.want)
-// 		}
-// 	}
-// }
+func TestCheckUsernameReturnsFalse(t *testing.T) {
+	assert.False(t, CheckUsername("abc"))
+}
 
-func TestCheckUsernameWithSubtest(t *testing.T) {
+// This is what we call table-driven test
+func TestCheckUsernameTable(t *testing.T) {
 	testCases := []struct {
 		name  string
 		input string
 		want  bool
 	}{
-		{name: "valid username", input: "lucascabj", want: true},
-		{name: "invalid username - empty string", input: "", want: false},
-		{name: "invalid username - too short", input: "lucas", want: false},
-		{name: "invalid username - contains admin", input: "adminlucas", want: false},
+		{"too short", "abc", false},
+		{"empty", "", false},
+		{"contains 'admin'", "newadmin", false},
+		{"valid username", "username_123", true},
 	}
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			got := CheckUsername(tc.input)
-			message := fmt.Sprintf("%s: got: %v \t want: %v", tc.name, got, tc.want)
-			assert.Equal(t, tc.want, got, message)
+			assert.Equal(t, got, tc.want, "got:%v\twant:%v", got, tc.want)
+		})
+	}
+}
+
+func TestLoginTable(t *testing.T) {
+	testCases := []struct {
+		name      string
+		username  string
+		password  string
+		shouldErr bool
+		wantErr   error
+	}{
+		{"invalid username", "abc", "", true, ErrInvalidUsername},
+		{"invalid password", "greatusername", "123456", true, ErrInvalidPassword},
+		{"valid credentials", "greausername", "1234", false, nil},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ok, err := Login(tc.username, tc.password)
+			if tc.shouldErr {
+				assert.ErrorIs(t, err, tc.wantErr)
+				assert.False(t, ok)
+			} else {
+				assert.NoError(t, err)
+				assert.True(t, ok)
+			}
 		})
 	}
 }
